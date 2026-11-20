@@ -24,15 +24,17 @@ type PreparePasskeyLoginResponse struct {
 }
 
 type UserSettings struct {
-	VersionRetentionEnabled bool         `json:"version_retention_enabled"`
-	VersionRetentionExt     []string     `json:"version_retention_ext,omitempty"`
-	VersionRetentionMax     int          `json:"version_retention_max,omitempty"`
-	Paswordless             bool         `json:"passwordless"`
-	TwoFAEnabled            bool         `json:"two_fa_enabled"`
-	Passkeys                []Passkey    `json:"passkeys,omitempty"`
-	DisableViewSync         bool         `json:"disable_view_sync"`
-	ShareLinksInProfile     string       `json:"share_links_in_profile"`
-	OAuthGrants             []OauthGrant `json:"oauth_grants,omitempty"`
+	VersionRetentionEnabled bool           `json:"version_retention_enabled"`
+	VersionRetentionExt     []string       `json:"version_retention_ext,omitempty"`
+	VersionRetentionMax     int            `json:"version_retention_max,omitempty"`
+	Paswordless             bool           `json:"passwordless"`
+	TwoFAEnabled            bool           `json:"two_fa_enabled"`
+	Passkeys                []Passkey      `json:"passkeys,omitempty"`
+	DisableViewSync         bool           `json:"disable_view_sync"`
+	ShareLinksInProfile     string         `json:"share_links_in_profile"`
+	OAuthGrants             []OauthGrant   `json:"oauth_grants,omitempty"`
+	PreferredPolicy         int            `json:"preferred_policy"`
+	StoragePolicyBindings   map[string]int `json:"storage_policy_bindings"`
 }
 
 func BuildUserSettings(u *ent.User, passkeys []*ent.Passkey, parser *uaparser.Parser, grants []*ent.OAuthGrant) *UserSettings {
@@ -50,6 +52,8 @@ func BuildUserSettings(u *ent.User, passkeys []*ent.Passkey, parser *uaparser.Pa
 		OAuthGrants: lo.Map(grants, func(item *ent.OAuthGrant, index int) OauthGrant {
 			return BuildOauthGrant(item)
 		}),
+		PreferredPolicy:       u.Settings.PreferredPolicy,
+		StoragePolicyBindings: u.Settings.StoragePolicyBindings,
 	}
 }
 

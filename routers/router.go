@@ -193,7 +193,7 @@ func initCORS(l logging.Logger, config conf.ConfigProvider, router *gin.Engine) 
 
 	// slave模式下未启动跨域的警告
 	if config.System().Mode == conf.SlaveMode {
-		l.Warning("You are running Cloudreve as slave node, if you are using slave storage policy, please enable CORS feature in config file, otherwise file cannot be uploaded from Master basic.")
+		l.Warning("You are running Kotakfile as slave node, if you are using slave storage policy, please enable CORS feature in config file, otherwise file cannot be uploaded from Master basic.")
 	}
 }
 
@@ -1125,6 +1125,44 @@ func initMasterRouter(dep dependency.Dep) *gin.Engine {
 					)
 				}
 
+				announcement := admin.Group("announcement")
+				{
+					// List announcements
+					announcement.POST("",
+						controllers.FromJSON[adminsvc.AdminListService](adminsvc.AdminListServiceParamsCtx{}),
+						controllers.AdminListAnnouncements,
+					)
+					// Get announcement
+					announcement.GET(":id",
+						controllers.FromUri[adminsvc.SingleAnnouncementService](adminsvc.SingleAnnouncementParamCtx{}),
+						controllers.AdminGetAnnouncement,
+					)
+					// Create announcement
+					announcement.PUT("",
+						middleware.RequiredScopes(types.ScopeAdminWrite),
+						controllers.FromJSON[adminsvc.UpsertAnnouncementService](adminsvc.UpsertAnnouncementParamCtx{}),
+						controllers.AdminCreateAnnouncement,
+					)
+					// Update announcement
+					announcement.PUT(":id",
+						middleware.RequiredScopes(types.ScopeAdminWrite),
+						controllers.FromJSON[adminsvc.UpsertAnnouncementService](adminsvc.UpsertAnnouncementParamCtx{}),
+						controllers.AdminUpdateAnnouncement,
+					)
+					// Delete announcement
+					announcement.DELETE(":id",
+						middleware.RequiredScopes(types.ScopeAdminWrite),
+						controllers.FromUri[adminsvc.SingleAnnouncementService](adminsvc.SingleAnnouncementParamCtx{}),
+						controllers.AdminDeleteAnnouncement,
+					)
+					// Batch delete announcements
+					announcement.POST("batch/delete",
+						middleware.RequiredScopes(types.ScopeAdminWrite),
+						controllers.FromJSON[adminsvc.BatchAnnouncementService](adminsvc.BatchAnnouncementParamCtx{}),
+						controllers.AdminBatchDeleteAnnouncement,
+					)
+				}
+
 				user := admin.Group("user")
 				{
 					// 列出用户
@@ -1249,6 +1287,8 @@ func initMasterRouter(dep dependency.Dep) *gin.Engine {
 				user.GET("me", middleware.RequiredScopes(types.ScopeUserInfoRead), controllers.UserMe)
 				// 存储信息
 				user.GET("capacity", middleware.RequiredScopes(types.ScopeUserInfoRead), controllers.UserStorage)
+				// 用户可用的存储策略
+				user.GET("policies", middleware.RequiredScopes(types.ScopeUserInfoRead), controllers.UserPolicies)
 				// Search user by keywords
 				user.GET("search",
 					middleware.RequiredScopes(types.ScopeUserInfoRead),
@@ -1291,6 +1331,20 @@ func initMasterRouter(dep dependency.Dep) *gin.Engine {
 					// 获得二步验证初始化信息
 					setting.GET("2fa", controllers.UserInit2FA)
 				}
+			}
+
+			// Announcements
+			announcements := auth.Group("announcements")
+			{
+				// List active announcements
+				announcements.GET("",
+					controllers.FromQuery[basic.ListAnnouncementService](basic.ListAnnouncementParamCtx{}),
+					controllers.ListAnnouncements,
+				)
+				// Get popup announcement
+				announcements.GET("popup",
+					controllers.GetAnnouncementPopup,
+				)
 			}
 
 			// WebDAV and devices

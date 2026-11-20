@@ -240,6 +240,20 @@ func UserSetting(c *gin.Context) {
 	})
 }
 
+// UserPolicies 获取用户可用的存储策略
+func UserPolicies(c *gin.Context) {
+	res, err := (&user.ListUserPoliciesService{}).List(c)
+	if err != nil {
+		c.JSON(200, serializer.Err(c, err))
+		c.Abort()
+		return
+	}
+
+	c.JSON(200, serializer.Response{
+		Data: res,
+	})
+}
+
 // UploadAvatar 从文件上传头像
 func UploadAvatar(c *gin.Context) {
 	if err := user.UpdateUserAvatar(c); err != nil {
