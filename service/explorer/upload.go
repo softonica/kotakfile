@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/cloudreve/Cloudreve/v4/application/dependency"
+	"github.com/cloudreve/Cloudreve/v4/ent"
 	"github.com/cloudreve/Cloudreve/v4/inventory"
 	"github.com/cloudreve/Cloudreve/v4/inventory/types"
 	"github.com/cloudreve/Cloudreve/v4/pkg/cluster"
@@ -16,6 +17,7 @@ import (
 	"github.com/cloudreve/Cloudreve/v4/pkg/request"
 	"github.com/cloudreve/Cloudreve/v4/pkg/serializer"
 	"github.com/gin-gonic/gin"
+	"github.com/samber/lo"
 )
 
 // CreateUploadSessionService 获取上传凭证服务
@@ -57,12 +59,9 @@ func (service *CreateUploadSessionService) Create(c context.Context) (*UploadSes
 	}
 
 	hasher := dep.HashIDEncoder()
-	policyId := 0
-	if service.PolicyID != "" {
-		policyId, err = hasher.Decode(service.PolicyID, hashid.PolicyID)
-		if err != nil {
-			return nil, serializer.NewError(serializer.CodeParamErr, "unknown policy id", err)
-		}
+	policyId, err := service.resolveClientPolicyID(user, hasher)
+	if err != nil {
+		return nil, err
 	}
 
 	uploadRequest := &fs.UploadRequest{
@@ -91,6 +90,30 @@ func (service *CreateUploadSessionService) Create(c context.Context) (*UploadSes
 	}
 
 	return BuildUploadSessionResponse(credential, hasher), nil
+}
+
+// resolveClientPolicyID decodes the client-supplied policy ID and verifies that
+// it belongs to the user's group assigned set. An empty assigned set leaves the
+// group unconstrained (legacy behavior), and a missing group edge skips the check.
+func (service *CreateUploadSessionService) resolveClientPolicyID(user *ent.User, hasher hashid.Encoder) (int, error) {
+	if service.PolicyID == "" {
+		return 0, nil
+	}
+
+	policyId, err := hasher.Decode(service.PolicyID, hashid.PolicyID)
+	if err != nil {
+		return 0, serializer.NewError(serializer.CodeParamErr, "unknown policy id", err)
+	}
+
+	if policyId > 0 && user != nil && user.Edges.Group != nil {
+		settings := user.Edges.Group.Settings
+		if settings != nil && len(settings.AssignedPolicyIDs) > 0 &&
+			!lo.Contains(settings.AssignedPolicyIDs, policyId) {
+			return 0, serializer.NewError(serializer.CodeParamErr, "policy not assigned to your group", nil)
+		}
+	}
+
+	return policyId, nil
 }
 
 type (
