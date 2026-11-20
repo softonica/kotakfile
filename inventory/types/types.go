@@ -17,6 +17,15 @@ type (
 		DisableViewSync     bool                     `json:"disable_view_sync,omitempty"`
 		FsViewMap           map[string]ExplorerView  `json:"fs_view_map,omitempty"`
 		ShareLinksInProfile ShareLinksInProfileLevel `json:"share_links_in_profile,omitempty"`
+
+		// PreferredPolicy is the user's personal default storage policy. It must
+		// be a member of the group's assigned policy set when that set is non-empty.
+		PreferredPolicy int `json:"preferred_policy,omitempty"`
+
+		// StoragePolicyBindings maps an owner-view directory path (e.g. "/videos")
+		// to a storage policy ID. User-level bindings take precedence over the
+		// group-level bindings in GroupSetting; values must reference assigned policies.
+		StoragePolicyBindings map[string]int `json:"storage_policy_bindings,omitempty"`
 	}
 
 	ShareLinksInProfileLevel string
