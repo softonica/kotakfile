@@ -4,14 +4,32 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/cloudreve/Cloudreve/v4/ent"
 	"github.com/cloudreve/Cloudreve/v4/ent/enttest"
 	"github.com/cloudreve/Cloudreve/v4/inventory/types"
 	"github.com/cloudreve/Cloudreve/v4/pkg/boolset"
+	"github.com/cloudreve/Cloudreve/v4/pkg/logging"
 	"github.com/stretchr/testify/require"
 )
+
+// capturingLogger records warnings emitted through logging.FromContext so the
+// cascade's skip-and-warn behavior can be asserted.
+type capturingLogger struct {
+	warnings []string
+}
+
+func (l *capturingLogger) Panic(string, ...any) {}
+func (l *capturingLogger) Error(string, ...any) {}
+func (l *capturingLogger) Warning(format string, v ...any) {
+	l.warnings = append(l.warnings, fmt.Sprintf(format, v...))
+}
+func (l *capturingLogger) Info(string, ...any)                  {}
+func (l *capturingLogger) Debug(string, ...any)                 {}
+func (l *capturingLogger) CopyWithPrefix(string) logging.Logger { return l }
+func (l *capturingLogger) SupportColor() bool                   { return false }
 
 func TestNormalizePolicyBindingPath(t *testing.T) {
 	require.Equal(t, "/", NormalizePolicyBindingPath(""))
@@ -80,7 +98,10 @@ func TestGetByPathCascade(t *testing.T) {
 	p3 := newPolicy("user level")    // user binding / preferred target
 	p4 := newPolicy("unassigned")    // preferred policy outside assigned set
 
-	const p = "/videos/clip.mp4"
+	const (
+		p         = "/videos/clip.mp4"
+		missingID = 999999 // no policy with this ID exists
+	)
 
 	tests := []struct {
 		name        string
@@ -89,6 +110,7 @@ func TestGetByPathCascade(t *testing.T) {
 		userNil     bool
 		nilSettings bool
 		want        *ent.StoragePolicy
+		wantWarning string
 	}{
 		{
 			name:  "user binding beats group binding",
@@ -109,10 +131,11 @@ func TestGetByPathCascade(t *testing.T) {
 			want:  p3,
 		},
 		{
-			name:  "unassigned user preferred falls through to group default",
-			group: &types.GroupSetting{AssignedPolicyIDs: []int{p1.ID, p2.ID}},
-			user:  &types.UserSetting{PreferredPolicy: p4.ID},
-			want:  p1,
+			name:        "unassigned user preferred falls through to group default",
+			group:       &types.GroupSetting{AssignedPolicyIDs: []int{p1.ID, p2.ID}},
+			user:        &types.UserSetting{PreferredPolicy: p4.ID},
+			want:        p1,
+			wantWarning: "not assigned",
 		},
 		{
 			name:    "nil user preserves group-only behavior",
@@ -126,6 +149,34 @@ func TestGetByPathCascade(t *testing.T) {
 			user:        &types.UserSetting{},
 			nilSettings: true,
 			want:        p1,
+		},
+		{
+			name:        "invalid user binding falls through to group binding",
+			group:       &types.GroupSetting{StoragePolicyBindings: map[string]int{"/videos": p2.ID}},
+			user:        &types.UserSetting{StoragePolicyBindings: map[string]int{"/videos": missingID}},
+			want:        p2,
+			wantWarning: fmt.Sprint(missingID),
+		},
+		{
+			name:        "invalid group binding falls through to user preferred",
+			group:       &types.GroupSetting{StoragePolicyBindings: map[string]int{"/videos": missingID}},
+			user:        &types.UserSetting{PreferredPolicy: p3.ID},
+			want:        p3,
+			wantWarning: fmt.Sprint(missingID),
+		},
+		{
+			name:        "invalid group binding falls through to group default",
+			group:       &types.GroupSetting{StoragePolicyBindings: map[string]int{"/videos": missingID}},
+			user:        &types.UserSetting{},
+			want:        p1,
+			wantWarning: fmt.Sprint(missingID),
+		},
+		{
+			name:        "invalid user preferred falls through to group default",
+			group:       &types.GroupSetting{},
+			user:        &types.UserSetting{PreferredPolicy: missingID},
+			want:        p1,
+			wantWarning: fmt.Sprint(missingID),
 		},
 	}
 
@@ -157,9 +208,16 @@ func TestGetByPathCascade(t *testing.T) {
 				}
 			}
 
-			got, err := sc.GetByPath(ctx, group, user, p)
+			lg := &capturingLogger{}
+			testCtx := context.WithValue(ctx, logging.LoggerCtx{}, lg)
+			got, err := sc.GetByPath(testCtx, group, user, p)
 			require.NoError(t, err)
 			require.Equal(t, tt.want.ID, got.ID)
+			if tt.wantWarning != "" {
+				require.Contains(t, strings.Join(lg.warnings, "\n"), tt.wantWarning)
+			} else {
+				require.Empty(t, lg.warnings)
+			}
 		})
 	}
 }

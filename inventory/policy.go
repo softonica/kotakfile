@@ -12,6 +12,7 @@ import (
 	"github.com/cloudreve/Cloudreve/v4/ent/storagepolicy"
 	"github.com/cloudreve/Cloudreve/v4/inventory/types"
 	"github.com/cloudreve/Cloudreve/v4/pkg/cache"
+	"github.com/cloudreve/Cloudreve/v4/pkg/logging"
 	"github.com/samber/lo"
 )
 
@@ -173,6 +174,8 @@ func (c *storagePolicyClient) GetByGroup(ctx context.Context, group *ent.Group) 
 // specific (longest) matching prefix wins. "/" can be used as a catch-all
 // binding. Each level that fails to resolve falls through to the next.
 func (c *storagePolicyClient) GetByPath(ctx context.Context, group *ent.Group, user *ent.User, p string) (*ent.StoragePolicy, error) {
+	l := logging.FromContext(ctx)
+
 	// Level 1: user-level directory binding.
 	if user != nil && user.Settings != nil && len(user.Settings.StoragePolicyBindings) > 0 {
 		if id, ok := MatchPolicyBinding(user.Settings.StoragePolicyBindings, p); ok && id > 0 {
@@ -180,6 +183,7 @@ func (c *storagePolicyClient) GetByPath(ctx context.Context, group *ent.Group, u
 			if err == nil {
 				return policy, nil
 			}
+			l.Warning("invalid user storage policy binding %d for path %q, falling back: %v", id, p, err)
 		}
 	}
 
@@ -187,10 +191,10 @@ func (c *storagePolicyClient) GetByPath(ctx context.Context, group *ent.Group, u
 	if group != nil && group.Settings != nil && len(group.Settings.StoragePolicyBindings) > 0 {
 		if id, ok := MatchPolicyBinding(group.Settings.StoragePolicyBindings, p); ok && id > 0 {
 			policy, err := c.GetPolicyByID(ctx, id)
-			if err != nil {
-				return nil, fmt.Errorf("get bound storage policy %d: %w", id, err)
+			if err == nil {
+				return policy, nil
 			}
-			return policy, nil
+			l.Warning("invalid group storage policy binding %d for path %q, falling back: %v", id, p, err)
 		}
 	}
 
@@ -202,11 +206,12 @@ func (c *storagePolicyClient) GetByPath(ctx context.Context, group *ent.Group, u
 		if group != nil && group.Settings != nil {
 			assigned = group.Settings.AssignedPolicyIDs
 		}
-		if len(assigned) == 0 || lo.Contains(assigned, preferred) {
-			policy, err := c.GetPolicyByID(ctx, preferred)
-			if err == nil {
-				return policy, nil
-			}
+		if len(assigned) > 0 && !lo.Contains(assigned, preferred) {
+			l.Warning("preferred storage policy %d is not assigned to its group, falling back", preferred)
+		} else if policy, err := c.GetPolicyByID(ctx, preferred); err == nil {
+			return policy, nil
+		} else {
+			l.Warning("invalid preferred storage policy %d, falling back: %v", preferred, err)
 		}
 	}
 
