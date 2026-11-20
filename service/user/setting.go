@@ -24,6 +24,7 @@ import (
 	"github.com/cloudreve/Cloudreve/v4/pkg/util"
 	"github.com/gin-gonic/gin"
 	"github.com/pquerna/otp/totp"
+	"github.com/samber/lo"
 )
 
 const (
@@ -218,18 +219,20 @@ func updateAvatarFile(ctx context.Context, u *ent.User, contentType string, file
 
 type (
 	PatchUserSetting struct {
-		Nick                    *string   `json:"nick" binding:"omitempty,min=1,max=255"`
-		Language                *string   `json:"language" binding:"omitempty,min=1,max=255"`
-		PreferredTheme          *string   `json:"preferred_theme" binding:"omitempty,hexcolor|rgb|rgba|hsl"`
-		VersionRetentionEnabled *bool     `json:"version_retention_enabled" binding:"omitempty"`
-		VersionRetentionExt     *[]string `json:"version_retention_ext" binding:"omitempty"`
-		VersionRetentionMax     *int      `json:"version_retention_max" binding:"omitempty,min=0"`
-		CurrentPassword         *string   `json:"current_password" binding:"omitempty,min=4,max=128"`
-		NewPassword             *string   `json:"new_password" binding:"omitempty,min=6,max=128"`
-		TwoFAEnabled            *bool     `json:"two_fa_enabled" binding:"omitempty"`
-		TwoFACode               *string   `json:"two_fa_code" binding:"omitempty"`
-		DisableViewSync         *bool     `json:"disable_view_sync" binding:"omitempty"`
-		ShareLinksInProfile     *string   `json:"share_links_in_profile" binding:"omitempty"`
+		Nick                    *string        `json:"nick" binding:"omitempty,min=1,max=255"`
+		Language                *string        `json:"language" binding:"omitempty,min=1,max=255"`
+		PreferredTheme          *string        `json:"preferred_theme" binding:"omitempty,hexcolor|rgb|rgba|hsl"`
+		VersionRetentionEnabled *bool          `json:"version_retention_enabled" binding:"omitempty"`
+		VersionRetentionExt     *[]string      `json:"version_retention_ext" binding:"omitempty"`
+		VersionRetentionMax     *int           `json:"version_retention_max" binding:"omitempty,min=0"`
+		CurrentPassword         *string        `json:"current_password" binding:"omitempty,min=4,max=128"`
+		NewPassword             *string        `json:"new_password" binding:"omitempty,min=6,max=128"`
+		TwoFAEnabled            *bool          `json:"two_fa_enabled" binding:"omitempty"`
+		TwoFACode               *string        `json:"two_fa_code" binding:"omitempty"`
+		DisableViewSync         *bool          `json:"disable_view_sync" binding:"omitempty"`
+		ShareLinksInProfile     *string        `json:"share_links_in_profile" binding:"omitempty"`
+		PreferredPolicy         *int           `json:"preferred_policy" binding:"omitempty"`
+		StoragePolicyBindings   map[string]int `json:"storage_policy_bindings" binding:"omitempty"`
 	}
 	PatchUserSettingParamsCtx struct{}
 )
@@ -239,6 +242,24 @@ func (s *PatchUserSetting) Patch(c *gin.Context) error {
 	u := inventory.UserFromContext(c)
 	userClient := dep.UserClient()
 	saveSetting := false
+
+	if err := s.validatePolicySelection(u); err != nil {
+		return err
+	}
+
+	if s.PreferredPolicy != nil {
+		u.Settings.PreferredPolicy = *s.PreferredPolicy
+		saveSetting = true
+	}
+
+	if s.StoragePolicyBindings != nil {
+		normalized := make(map[string]int, len(s.StoragePolicyBindings))
+		for p, policyID := range s.StoragePolicyBindings {
+			normalized[inventory.NormalizePolicyBindingPath(p)] = policyID
+		}
+		u.Settings.StoragePolicyBindings = normalized
+		saveSetting = true
+	}
 
 	if s.Nick != nil {
 		if _, err := userClient.UpdateNickname(c, u, *s.Nick); err != nil {
@@ -330,6 +351,32 @@ func (s *PatchUserSetting) Patch(c *gin.Context) error {
 	if saveSetting {
 		if err := userClient.SaveSettings(c, u); err != nil {
 			return serializer.NewError(serializer.CodeDBError, "Failed to update user settings", err)
+		}
+	}
+
+	return nil
+}
+
+// validatePolicySelection checks that the user's preferred policy and personal
+// directory bindings reference policies in the group's assigned set. An empty
+// assigned set (or a missing group edge) leaves the user unconstrained.
+func (s *PatchUserSetting) validatePolicySelection(u *ent.User) error {
+	if u == nil || u.Edges.Group == nil || u.Edges.Group.Settings == nil {
+		return nil
+	}
+
+	assigned := u.Edges.Group.Settings.AssignedPolicyIDs
+	if len(assigned) == 0 {
+		return nil
+	}
+
+	if s.PreferredPolicy != nil && !lo.Contains(assigned, *s.PreferredPolicy) {
+		return serializer.NewError(serializer.CodeParamErr, "policy not assigned to your group", nil)
+	}
+
+	for _, policyID := range s.StoragePolicyBindings {
+		if !lo.Contains(assigned, policyID) {
+			return serializer.NewError(serializer.CodeParamErr, "directory binding policy not assigned to your group", nil)
 		}
 	}
 
