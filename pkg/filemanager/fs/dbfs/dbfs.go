@@ -667,18 +667,29 @@ func (f *DBFS) generateEncryptMetadata(ctx context.Context, uploadRequest *fs.Up
 
 // getPreferredPolicy tries to get the preferred storage policy for the given file.
 func (f *DBFS) getPreferredPolicy(ctx context.Context, file *File) (*ent.StoragePolicy, error) {
-	ownerGroup := file.Owner().Edges.Group
+	owner := file.Owner()
+	if owner == nil {
+		return nil, fmt.Errorf("owner not loaded")
+	}
+	ownerGroup := owner.Edges.Group
 	if ownerGroup == nil {
 		return nil, fmt.Errorf("owner group not loaded")
 	}
 
+	// Resolve from the owner-view directory path so that different folders of
+	// the same user group can be backed by different storage providers.
+	var p string
+	if u := file.Uri(true); u != nil {
+		p = u.Path()
+	}
+
 	sc, _ := inventory.InheritTx(ctx, f.storagePolicyClient)
-	groupPolicy, err := sc.GetByGroup(ctx, ownerGroup)
+	policy, err := sc.GetByPath(ctx, ownerGroup, owner, p)
 	if err != nil {
 		return nil, serializer.NewError(serializer.CodeDBError, "Failed to get available storage policies", err)
 	}
 
-	return groupPolicy, nil
+	return policy, nil
 }
 
 func (f *DBFS) getFileByPath(ctx context.Context, navigator Navigator, path *fs.URI) (*File, error) {

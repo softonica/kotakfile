@@ -4,12 +4,15 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"path"
 	"strconv"
+	"strings"
 
 	"github.com/cloudreve/Cloudreve/v4/ent"
 	"github.com/cloudreve/Cloudreve/v4/ent/storagepolicy"
 	"github.com/cloudreve/Cloudreve/v4/inventory/types"
 	"github.com/cloudreve/Cloudreve/v4/pkg/cache"
+	"github.com/samber/lo"
 )
 
 const (
@@ -28,8 +31,12 @@ type (
 
 	StoragePolicyClient interface {
 		TxOperator
-		// GetByGroup returns the storage policies of the group.
+		// GetByGroup returns the default storage policy of the group.
 		GetByGroup(ctx context.Context, group *ent.Group) (*ent.StoragePolicy, error)
+		// GetByPath resolves the storage policy for the given owner-view directory
+		// path through the cascade: user binding, group binding, user preferred
+		// policy, then the group's default policy.
+		GetByPath(ctx context.Context, group *ent.Group, user *ent.User, p string) (*ent.StoragePolicy, error)
 		// GetPolicyByID returns the storage policy by id.
 		GetPolicyByID(ctx context.Context, id int) (*ent.StoragePolicy, error)
 		// UpdateAccessKey updates the access key of the storage policy. It also clear related cache in KV.
@@ -152,6 +159,99 @@ func (c *storagePolicyClient) GetByGroup(ctx context.Context, group *ent.Group) 
 	}
 
 	return res, nil
+}
+
+// GetByPath resolves the storage policy for a directory path through the
+// following cascade, most specific first:
+//
+//  1. user-level directory binding
+//  2. group-level directory binding
+//  3. user's preferred policy (when permitted by the group's assigned set)
+//  4. group's default policy
+//
+// A binding on a parent directory applies to all of its children; the most
+// specific (longest) matching prefix wins. "/" can be used as a catch-all
+// binding. Each level that fails to resolve falls through to the next.
+func (c *storagePolicyClient) GetByPath(ctx context.Context, group *ent.Group, user *ent.User, p string) (*ent.StoragePolicy, error) {
+	// Level 1: user-level directory binding.
+	if user != nil && user.Settings != nil && len(user.Settings.StoragePolicyBindings) > 0 {
+		if id, ok := MatchPolicyBinding(user.Settings.StoragePolicyBindings, p); ok && id > 0 {
+			policy, err := c.GetPolicyByID(ctx, id)
+			if err == nil {
+				return policy, nil
+			}
+		}
+	}
+
+	// Level 2: group-level directory binding.
+	if group != nil && group.Settings != nil && len(group.Settings.StoragePolicyBindings) > 0 {
+		if id, ok := MatchPolicyBinding(group.Settings.StoragePolicyBindings, p); ok && id > 0 {
+			policy, err := c.GetPolicyByID(ctx, id)
+			if err != nil {
+				return nil, fmt.Errorf("get bound storage policy %d: %w", id, err)
+			}
+			return policy, nil
+		}
+	}
+
+	// Level 3: user's preferred policy. An empty group assigned set leaves the
+	// user unconstrained; otherwise the preference must be a member of it.
+	if user != nil && user.Settings != nil && user.Settings.PreferredPolicy > 0 {
+		preferred := user.Settings.PreferredPolicy
+		var assigned []int
+		if group != nil && group.Settings != nil {
+			assigned = group.Settings.AssignedPolicyIDs
+		}
+		if len(assigned) == 0 || lo.Contains(assigned, preferred) {
+			policy, err := c.GetPolicyByID(ctx, preferred)
+			if err == nil {
+				return policy, nil
+			}
+		}
+	}
+
+	// Level 4: group's default policy.
+	return c.GetByGroup(ctx, group)
+}
+
+// MatchPolicyBinding returns the policy ID of the longest directory prefix
+// matching p. Prefixes are normalized so "/videos", "videos/" and "/videos/"
+// are treated identically.
+func MatchPolicyBinding(bindings map[string]int, p string) (int, bool) {
+	p = NormalizePolicyBindingPath(p)
+
+	var (
+		best     string
+		policyID int
+		found    bool
+	)
+	for prefix, id := range bindings {
+		np := NormalizePolicyBindingPath(prefix)
+		if np == "/" || p == np || strings.HasPrefix(p, np+"/") {
+			if !found || len(np) > len(best) {
+				best = np
+				policyID = id
+				found = true
+			}
+		}
+	}
+
+	return policyID, found
+}
+
+// NormalizePolicyBindingPath cleans a directory path used in policy bindings.
+func NormalizePolicyBindingPath(p string) string {
+	if p == "" {
+		return "/"
+	}
+	if !strings.HasPrefix(p, "/") {
+		p = "/" + p
+	}
+	p = path.Clean(p)
+	if len(p) > 1 {
+		p = strings.TrimSuffix(p, "/")
+	}
+	return p
 }
 
 // GetPolicyByID returns the storage policy by id.
