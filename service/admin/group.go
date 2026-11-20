@@ -152,9 +152,64 @@ type (
 	UpsertGroupParamCtx struct{}
 )
 
+// validateAssignedPolicies makes sure the group's assigned policy set is
+// coherent: an empty set is unconstrained, otherwise every ID must refer to an
+// existing policy and the group's default storage_policy_id must be a member.
+func (s *UpsertGroupService) validateAssignedPolicies(c *gin.Context) error {
+	if s.Group == nil || s.Group.Settings == nil || len(s.Group.Settings.AssignedPolicyIDs) == 0 {
+		return nil
+	}
+
+	dep := dependency.FromContext(c)
+	seen := make(map[int]bool, len(s.Group.Settings.AssignedPolicyIDs))
+	for _, id := range s.Group.Settings.AssignedPolicyIDs {
+		if id <= 0 {
+			return serializer.NewError(serializer.CodeParamErr, "invalid assigned storage policy id", nil)
+		}
+		if _, err := dep.StoragePolicyClient().GetPolicyByID(c, id); err != nil {
+			return serializer.NewError(serializer.CodeParamErr, "unknown storage policy in assigned set", err)
+		}
+		seen[id] = true
+	}
+
+	if !seen[s.Group.StoragePolicyID] {
+		return serializer.NewError(serializer.CodeParamErr, "default storage policy is not in assigned set", nil)
+	}
+	return nil
+}
+
+// normalizeAndValidateBindings makes sure every directory -> storage policy
+// binding points to an existing policy and stores paths in a canonical form.
+func (s *UpsertGroupService) normalizeAndValidateBindings(c *gin.Context) error {
+	if s.Group.Settings == nil || len(s.Group.Settings.StoragePolicyBindings) == 0 {
+		return nil
+	}
+
+	dep := dependency.FromContext(c)
+	normalized := make(map[string]int, len(s.Group.Settings.StoragePolicyBindings))
+	for p, policyID := range s.Group.Settings.StoragePolicyBindings {
+		if policyID <= 0 {
+			return serializer.NewError(serializer.CodeParamErr, "invalid storage policy id in directory binding", nil)
+		}
+		if _, err := dep.StoragePolicyClient().GetPolicyByID(c, policyID); err != nil {
+			return serializer.NewError(serializer.CodeParamErr, "unknown storage policy in directory binding", err)
+		}
+		normalized[inventory.NormalizePolicyBindingPath(p)] = policyID
+	}
+	s.Group.Settings.StoragePolicyBindings = normalized
+	return nil
+}
+
 func (s *UpsertGroupService) Update(c *gin.Context) (*GetGroupResponse, error) {
 	dep := dependency.FromContext(c)
 	groupClient := dep.GroupClient()
+
+	if err := s.validateAssignedPolicies(c); err != nil {
+		return nil, err
+	}
+	if err := s.normalizeAndValidateBindings(c); err != nil {
+		return nil, err
+	}
 
 	if s.Group.ID == 0 {
 		return nil, serializer.NewError(serializer.CodeParamErr, "ID is required", nil)
@@ -177,6 +232,13 @@ func (s *UpsertGroupService) Update(c *gin.Context) (*GetGroupResponse, error) {
 func (s *UpsertGroupService) Create(c *gin.Context) (*GetGroupResponse, error) {
 	dep := dependency.FromContext(c)
 	groupClient := dep.GroupClient()
+
+	if err := s.validateAssignedPolicies(c); err != nil {
+		return nil, err
+	}
+	if err := s.normalizeAndValidateBindings(c); err != nil {
+		return nil, err
+	}
 
 	if s.Group.ID > 0 {
 		return nil, serializer.NewError(serializer.CodeParamErr, "ID must be 0", nil)

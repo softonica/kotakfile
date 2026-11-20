@@ -36,6 +36,18 @@ type (
 		MaxWalkedFiles        int                    `json:"max_walked_files,omitempty"`
 		TrashRetention        int                    `json:"trash_retention,omitempty"`
 		RedirectedSource      bool                   `json:"redirected_source,omitempty"`
+
+		// StoragePolicyBindings maps an owner-view directory path (e.g. "/videos")
+		// to a storage policy ID. The longest matching path prefix wins. If no
+		// binding matches, the group's default storage_policy_id is used.
+		// This allows one user group to spread different directories over
+		// different storage providers (e.g. three separate S3 accounts).
+		StoragePolicyBindings map[string]int `json:"storage_policy_bindings,omitempty"`
+
+		// AssignedPolicyIDs is the set of storage policies this group may use.
+		// The group's default storage_policy_id must be a member when the set
+		// is non-empty.
+		AssignedPolicyIDs []int `json:"assigned_policy_ids,omitempty"`
 	}
 
 	// PolicySetting 非公有的存储策略属性
@@ -56,7 +68,7 @@ type (
 		CustomProxy bool `json:"custom_proxy,omitempty"`
 		// ProxyServer 反代地址
 		ProxyServer string `json:"proxy_server,omitempty"`
-		// InternalProxy whether to use Cloudreve internal proxy to get file content
+		// InternalProxy whether to use Kotakfile internal proxy to get file content
 		InternalProxy bool `json:"internal_proxy,omitempty"`
 		// OdDriver OneDrive 驱动器定位符
 		OdDriver string `json:"od_driver,omitempty"`
