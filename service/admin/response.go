@@ -125,6 +125,15 @@ type GetOAuthClientResponse struct {
 	TotalGrants int  `json:"total_grants,omitempty"`
 }
 
+type ListAnnouncementResponse struct {
+	Pagination    *inventory.PaginationResults `json:"pagination"`
+	Announcements []*ent.Announcement          `json:"announcements"`
+}
+
+type GetAnnouncementResponse struct {
+	*ent.Announcement
+}
+
 type HomepageSummary struct {
 	MetricsSummary *MetricsSummary `json:"metrics_summary"`
 	SiteURls       []string        `json:"site_urls"`

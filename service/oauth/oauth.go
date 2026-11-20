@@ -317,7 +317,7 @@ func (s *UserInfoService) GetUserInfo(c *gin.Context) (*UserInfoResponse, error)
 			resp.UpdatedAt = u.UpdatedAt.Unix()
 		case types.ScopeEmail:
 			resp.Email = u.Email
-			resp.EmailVerified = true // Users in Cloudreve have verified emails
+			resp.EmailVerified = true // Users in Kotakfile have verified emails
 		}
 	}
 

@@ -10,7 +10,7 @@ builds:
   - env:
       - CGO_ENABLED=0
 
-    binary: cloudreve
+    binary: kotakfile
 
     ldflags:
       - -s -w
@@ -51,7 +51,7 @@ archives:
   - formats: ["tar.gz"]
     # this name template makes the OS and Arch compatible with the results of uname.
     name_template: >-
-      cloudreve_{{.Tag}}_{{- .Os }}_{{ .Arch }}
+      kotakfile_{{.Tag}}_{{- .Os }}_{{ .Arch }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
     # use zip for windows archives
     format_overrides:
@@ -89,7 +89,7 @@ dockers:
       - .build/aria2.supervisor.conf
       - .build/entrypoint.sh
     image_templates:
-      - "cloudreve/cloudreve:{{ .Tag }}-amd64"
+      - "kotakfile/kotakfile:{{ .Tag }}-amd64"
   - dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -101,18 +101,18 @@ dockers:
       - .build/aria2.supervisor.conf
       - .build/entrypoint.sh
     image_templates:
-      - "cloudreve/cloudreve:{{ .Tag }}-arm64"
+      - "kotakfile/kotakfile:{{ .Tag }}-arm64"
 
 docker_manifests:
-  - name_template: "cloudreve/cloudreve:latest"
+  - name_template: "kotakfile/kotakfile:latest"
     image_templates:
-      - "cloudreve/cloudreve:{{ .Tag }}-amd64"
-      - "cloudreve/cloudreve:{{ .Tag }}-arm64"
-  - name_template: "cloudreve/cloudreve:v4"
+      - "kotakfile/kotakfile:{{ .Tag }}-amd64"
+      - "kotakfile/kotakfile:{{ .Tag }}-arm64"
+  - name_template: "kotakfile/kotakfile:v4"
     image_templates:
-      - "cloudreve/cloudreve:{{ .Tag }}-amd64"
-      - "cloudreve/cloudreve:{{ .Tag }}-arm64"
-  - name_template: "cloudreve/cloudreve:{{ .Tag }}"
+      - "kotakfile/kotakfile:{{ .Tag }}-amd64"
+      - "kotakfile/kotakfile:{{ .Tag }}-arm64"
+  - name_template: "kotakfile/kotakfile:{{ .Tag }}"
     image_templates:
-      - "cloudreve/cloudreve:{{ .Tag }}-amd64"
-      - "cloudreve/cloudreve:{{ .Tag }}-arm64"
+      - "kotakfile/kotakfile:{{ .Tag }}-amd64"
+      - "kotakfile/kotakfile:{{ .Tag }}-arm64"

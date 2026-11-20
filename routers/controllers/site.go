@@ -24,6 +24,38 @@ func SiteConfig(c *gin.Context) {
 	})
 }
 
+// ListAnnouncements 获取公告列表
+func ListAnnouncements(c *gin.Context) {
+	service := ParametersFromContext[*basic.ListAnnouncementService](c, basic.ListAnnouncementParamCtx{})
+
+	resp, err := service.ListActive(c)
+	if err != nil {
+		c.JSON(200, serializer.Err(c, err))
+		c.Abort()
+		return
+	}
+
+	c.JSON(200, serializer.Response{
+		Data: resp,
+	})
+}
+
+// GetAnnouncementPopup 获取弹窗公告
+func GetAnnouncementPopup(c *gin.Context) {
+	service := &basic.GetPopupService{}
+
+	resp, err := service.GetPopup(c)
+	if err != nil {
+		c.JSON(200, serializer.Err(c, err))
+		c.Abort()
+		return
+	}
+
+	c.JSON(200, serializer.Response{
+		Data: resp,
+	})
+}
+
 // Ping 状态检查页面
 func Ping(c *gin.Context) {
 	version := constants.BackendVersion

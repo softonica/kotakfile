@@ -85,7 +85,7 @@ func NewServerStaticFS(l logging.Logger, statics fs.FS, isPro bool) (static.Serv
 		return staticFS, nil
 	}
 
-	staticName := "cloudreve-frontend"
+	staticName := "kotakfile-frontend"
 	if isPro {
 		staticName += "-pro"
 	}

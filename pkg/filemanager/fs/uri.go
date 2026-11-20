@@ -47,7 +47,7 @@ func NewUriFromString(u string) (*URI, error) {
 		return nil, fmt.Errorf("failed to parse uri: %w", err)
 	}
 
-	if raw.Scheme != constants.CloudreveScheme {
+	if raw.Scheme != constants.KotakfileScheme {
 		return nil, fmt.Errorf("unknown scheme: %s", raw.Scheme)
 	}
 
@@ -356,16 +356,16 @@ func SearchCategoryFromString(s string) setting.SearchCategory {
 
 func NewShareUri(id, password string) string {
 	if password != "" {
-		return fmt.Sprintf("%s://%s:%s@%s", constants.CloudreveScheme, id, password, constants.FileSystemShare)
+		return fmt.Sprintf("%s://%s:%s@%s", constants.KotakfileScheme, id, password, constants.FileSystemShare)
 	}
-	return fmt.Sprintf("%s://%s@%s", constants.CloudreveScheme, id, constants.FileSystemShare)
+	return fmt.Sprintf("%s://%s@%s", constants.KotakfileScheme, id, constants.FileSystemShare)
 }
 
 func NewMyUri(id string) string {
 	if id == "" {
-		return fmt.Sprintf("%s://%s", constants.CloudreveScheme, constants.FileSystemMy)
+		return fmt.Sprintf("%s://%s", constants.KotakfileScheme, constants.FileSystemMy)
 	}
-	return fmt.Sprintf("%s://%s@%s", constants.CloudreveScheme, id, constants.FileSystemMy)
+	return fmt.Sprintf("%s://%s@%s", constants.KotakfileScheme, id, constants.FileSystemMy)
 }
 
 // PathEscape is same as url.PathEscape, with modifications to incoporate with JS encodeURIComponent:

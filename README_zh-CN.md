@@ -4,14 +4,14 @@
   <br>
   <a href="https://cloudreve.org/" alt="logo" ><img src="https://raw.githubusercontent.com/cloudreve/frontend/master/public/static/img/logo192.png" width="150"/></a>
   <br>
-  Cloudreve
+  Kotakfile
   <br>
 </h1>
 
 <h4 align="center">支持多家云存储驱动的公有云文件系统.</h4>
 
 <p align="center">
-  <a href="https://dev.azure.com/abslantliu/cloudreve/_build?definitionId=6">
+  <a href="https://dev.azure.com/abslantliu/kotakfile/_build?definitionId=6">
     <img src="https://img.shields.io/github/check-runs/cloudreve/cloudreve/master"
          alt="Azure pipelines">
   </a>
@@ -31,11 +31,11 @@
   <a href="https://github.com/cloudreve/cloudreve/discussions">讨论</a> •
   <a href="https://docs.cloudreve.org">文档</a> •
   <a href="https://github.com/cloudreve/cloudreve/releases">下载</a> •
-  <a href="https://t.me/cloudreve_official">Telegram</a> •
+  <a href="https://t.me/kotakfile_official">Telegram</a> •
   <a href="https://discord.com/invite/WTpMFpZT76">Discord</a>
 </p>
 
-![Screenshot](https://raw.githubusercontent.com/cloudreve/docs/master/images/homepage.png)
+![Screenshot](https://raw.githubusercontent.com/kotakfile/docs/master/images/homepage.png)
 
 ## :sparkles: 特性
 
@@ -57,15 +57,15 @@
 
 你可以参考 [快速开始](https://docs.cloudreve.org/overview/quickstart) 启动一个本地实例进行体验、测试。
 
-当你准备好将 Cloudreve 部署到生产环境时，可以参考 [部署](https://docs.cloudreve.org/overview/deploy/) 进行完整部署。
+当你准备好将 Kotakfile 部署到生产环境时，可以参考 [部署](https://docs.cloudreve.org/overview/deploy/) 进行完整部署。
 
 ## :gear: 构建
 
-你可以参考 [构建](https://docs.cloudreve.org/overview/build/) 从源代码构建 Cloudreve。
+你可以参考 [构建](https://docs.cloudreve.org/overview/build/) 从源代码构建 Kotakfile。
 
 ## :rocket: 贡献
 
-如果你有兴趣为 Cloudreve 贡献代码，请参考 [贡献](https://docs.cloudreve.org/api/contributing/) 了解如何贡献。
+如果你有兴趣为 Kotakfile 贡献代码，请参考 [贡献](https://docs.cloudreve.org/api/contributing/) 了解如何贡献。
 
 ## :alembic: 技术栈
 

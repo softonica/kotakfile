@@ -8,7 +8,7 @@
 <h4 align="center">Self-hosted file management system with multi-cloud support.</h4>
 
 <p align="center">
-  <a href="https://dev.azure.com/abslantliu/cloudreve/_build?definitionId=6">
+  <a href="https://dev.azure.com/abslantliu/kotakfile/_build?definitionId=6">
     <img src="https://img.shields.io/github/check-runs/cloudreve/cloudreve/master"
          alt="Azure pipelines">
   </a>
@@ -28,11 +28,11 @@
   <a href="https://github.com/cloudreve/cloudreve/discussions">Discussion</a> •
   <a href="https://docs.cloudreve.org">Documents</a> •
   <a href="https://github.com/cloudreve/cloudreve/releases">Download</a> •
-  <a href="https://t.me/cloudreve_official">Telegram</a> •
+  <a href="https://t.me/kotakfile_official">Telegram</a> •
   <a href="https://discord.com/invite/WTpMFpZT76">Discord</a>
 </p>
 
-![Screenshot](https://raw.githubusercontent.com/cloudreve/docs/master/images/homepage.png)
+![Screenshot](https://raw.githubusercontent.com/kotakfile/docs/master/images/homepage.png)
 
 ## :sparkles: Features
 
@@ -52,17 +52,17 @@
 
 ## :hammer_and_wrench: Deploy
 
-To deploy Cloudreve, you can refer to [Getting started](https://docs.cloudreve.org/overview/quickstart) for a quick local deployment to test.
+To deploy Kotakfile, you can refer to [Getting started](https://docs.cloudreve.org/overview/quickstart) for a quick local deployment to test.
 
-When you're ready to deploy Cloudreve to a production environment, you can refer to [Deploy](https://docs.cloudreve.org/overview/deploy/) for a complete deployment.
+When you're ready to deploy Kotakfile to a production environment, you can refer to [Deploy](https://docs.cloudreve.org/overview/deploy/) for a complete deployment.
 
 ## :gear: Build
 
-Please refer to [Build](https://docs.cloudreve.org/overview/build/) for how to build Cloudreve from source code.
+Please refer to [Build](https://docs.cloudreve.org/overview/build/) for how to build Kotakfile from source code.
 
 ## :rocket: Contributing
 
-If you're interested in contributing to Cloudreve, please refer to [Contributing](https://docs.cloudreve.org/api/contributing/) for how to contribute to Cloudreve.
+If you're interested in contributing to Kotakfile, please refer to [Contributing](https://docs.cloudreve.org/api/contributing/) for how to contribute to Kotakfile.
 
 ## :alembic: Stacks
 

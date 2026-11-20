@@ -1,4 +1,4 @@
-package inventory
+﻿package inventory
 
 import (
 	"context"
@@ -282,7 +282,7 @@ const (
 	OAuthClientDesktopRedirectURI = "/callback/desktop"
 	OAuthClientCLIGUID            = "6326d2af-2fef-4a99-94da-1ee8ef0ca53f"
 	OAuthClientCLISecret          = "yoFiNgbxvSCzK2Nm92T3TNaREh4qBjq4"
-	OAuthClientCLIName            = "Cloudreve CLI"
+	OAuthClientCLIName            = "Kotakfile CLI"
 	OAuthClientCLIRedirectURI     = "http://127.0.0.1/callback"
 	OAuthClientiOSGUID            = "220db97a-44a3-44f7-99b6-d767262b4daa"
 	OAuthClientiOSSecret          = "1kxOW4IyVOkPlsKCnTwzfHyP8XrbpfaF"
@@ -317,7 +317,7 @@ func migrateOAuthClientiOS(l logging.Logger, client *ent.Client, ctx context.Con
 		SetName(OAuthClientiOSName).
 		SetRedirectUris([]string{OAuthClientiOSRedirectURI}).
 		SetScopes([]string{"profile", "email", "openid", "offline_access", "UserInfo.Write", "UserSecurityInfo.Write", "Workflow.Write", "Files.Write", "Shares.Write", "Finance.Write", "DavAccount.Write"}).
-		SetProps(&types.OAuthClientProps{Icon: "/static/img/cloudreve_ios.svg", RefreshTokenTTL: 7776000}).
+		SetProps(&types.OAuthClientProps{Icon: "/static/img/kotakfile_ios.svg", RefreshTokenTTL: 7776000}).
 		SetIsEnabled(true).
 		Save(ctx); err != nil {
 		return fmt.Errorf("failed to create default OAuth client: %w", err)
@@ -338,7 +338,7 @@ func migrateOAuthClientDesktop(l logging.Logger, client *ent.Client, ctx context
 		SetName(OAuthClientDesktopName).
 		SetRedirectUris([]string{OAuthClientDesktopRedirectURI}).
 		SetScopes([]string{"profile", "email", "openid", "offline_access", "UserInfo.Write", "Workflow.Write", "Files.Write", "Shares.Write"}).
-		SetProps(&types.OAuthClientProps{Icon: "/static/img/cloudreve.svg", RefreshTokenTTL: 7776000}).
+		SetProps(&types.OAuthClientProps{Icon: "/static/img/kotakfile.svg", RefreshTokenTTL: 7776000}).
 		SetIsEnabled(true).
 		Save(ctx); err != nil {
 		return fmt.Errorf("failed to create default OAuth client: %w", err)
@@ -362,7 +362,7 @@ func migrateOAuthClientCLI(l logging.Logger, client *ent.Client, ctx context.Con
 		SetName(OAuthClientCLIName).
 		SetRedirectUris([]string{OAuthClientCLIRedirectURI}).
 		SetScopes([]string{"profile", "email", "openid", "offline_access", "UserInfo.Write", "Workflow.Write", "Files.Write", "Shares.Write"}).
-		SetProps(&types.OAuthClientProps{Icon: "/static/img/cloudreve.svg", RefreshTokenTTL: 7776000}).
+		SetProps(&types.OAuthClientProps{Icon: "/static/img/kotakfile.svg", RefreshTokenTTL: 7776000}).
 		SetIsEnabled(true).
 		Save(ctx); err != nil {
 		return fmt.Errorf("failed to create default CLI OAuth client: %w", err)
@@ -606,6 +606,27 @@ var patches = []Patch{
 			ctx = context.WithValue(ctx, debug.SkipDbLogging{}, true)
 			if err := client.Setting.Update().Where(setting.Name("secret_key")).SetValue(newSecretKey).Exec(ctx); err != nil {
 				return fmt.Errorf("failed to update secret_key setting: %w", err)
+			}
+
+			return nil
+		},
+	},
+	{
+		Name:       "apply_default_announcement_settings",
+		EndVersion: "4.15.0",
+		Func: func(l logging.Logger, client *ent.Client, ctx context.Context) error {
+			exists, err := client.Setting.Query().Where(setting.Name("announcement_popup_enabled")).Exist(ctx)
+			if err != nil {
+				return fmt.Errorf("failed to query announcement_popup_enabled setting: %w", err)
+			}
+
+			if !exists {
+				if _, err := client.Setting.Create().
+					SetName("announcement_popup_enabled").
+					SetValue("1").
+					Save(ctx); err != nil {
+					return fmt.Errorf("failed to create announcement_popup_enabled setting: %w", err)
+				}
 			}
 
 			return nil

@@ -28,7 +28,7 @@ type (
 func (s *ShortLinkRedirectService) RedirectTo(c *gin.Context) string {
 	shareLongUrl := routes.MasterShareLongUrl(s.ID, s.Password)
 
-	shortLinkQuery := c.Request.URL.Query() // Query in ShortLink, adapt to Cloudreve V3
+	shortLinkQuery := c.Request.URL.Query() // Query in ShortLink, adapt to Kotakfile V3
 	shareLongUrlQuery := shareLongUrl.Query()
 
 	userSpecifiedPath := shortLinkQuery.Get("path")

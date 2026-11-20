@@ -22,7 +22,7 @@ func TestBuiltinCLIOAuthMigration(t *testing.T) {
 	require.NoError(t, err)
 	cli, err := client.OAuthClient.Query().Where(oauthclient.GUID(OAuthClientCLIGUID)).Only(ctx)
 	require.NoError(t, err)
-	require.Equal(t, "Cloudreve CLI", cli.Name)
+	require.Equal(t, "Kotakfile CLI", cli.Name)
 	require.Equal(t, OAuthClientCLISecret, cli.Secret)
 	require.Equal(t, []string{"http://127.0.0.1/callback"}, cli.RedirectUris)
 	require.Equal(t, desktop.Scopes, cli.Scopes)

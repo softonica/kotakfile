@@ -31,6 +31,16 @@ const (
 func InitializeDBClient(l logging.Logger,
 	client *ent.Client, kv cache.Driver, requiredDbVersion string) (*ent.Client, error) {
 	ctx := context.WithValue(context.Background(), logging.LoggerCtx{}, l)
+
+	// Always ensure the schema is up to date. Ent's schema migration is
+	// incremental and safe: it only creates missing tables/columns, so
+	// existing data is never touched. This guarantees newly added entities
+	// (e.g. announcements) are created even when the database version marker
+	// is unchanged.
+	if err := client.Schema.Create(ctx); err != nil {
+		return nil, fmt.Errorf("failed to create schema resources: %w", err)
+	}
+
 	if needMigration(client, ctx, requiredDbVersion) {
 		// Run the auto migration tool.
 		if err := migrate(l, client, ctx, kv, requiredDbVersion); err != nil {
@@ -38,6 +48,10 @@ func InitializeDBClient(l logging.Logger,
 		}
 	} else {
 		l.Info("Database schema is up to date.")
+		// Apply pending schema patches even when the database version is unchanged.
+		if err := applyPatches(l, client, ctx, requiredDbVersion); err != nil {
+			return nil, fmt.Errorf("failed to apply schema patches: %w", err)
+		}
 	}
 
 	//createMockData(client, ctx)

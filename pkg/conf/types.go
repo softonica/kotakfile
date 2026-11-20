@@ -104,7 +104,7 @@ var RedisConfig = &Redis{
 // DatabaseConfig 数据库配置
 var DatabaseConfig = &Database{
 	Charset:     "utf8mb4",
-	DBFile:      util.DataPath("cloudreve.db"),
+	DBFile:      util.DataPath("kotakfile.db"),
 	Port:        3306,
 	UnixSocket:  false,
 	DatabaseURL: "",

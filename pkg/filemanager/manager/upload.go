@@ -201,7 +201,7 @@ func (m *manager) ConfirmUploadSession(ctx context.Context, session *fs.UploadSe
 		ctx = fs.LockSessionToContext(ctx, ls)
 	}
 
-	// Make sure this storage policy is OK to receive data from clients to Cloudreve server.
+	// Make sure this storage policy is OK to receive data from clients to Kotakfile server.
 	if session.Policy.Type != types.PolicyTypeLocal && !session.Policy.Settings.Relay {
 		return nil, serializer.NewError(serializer.CodePolicyNotAllowed, "", nil)
 	}

@@ -74,10 +74,10 @@ func TestHTTPClient_Request(t *testing.T) {
 	{
 		resp := client.Request(
 			"GET",
-			"http://cloudreveisnotexist.com",
+			"http://kotakfileisnotexist.com",
 			strings.NewReader(""),
 			WithContentLength(0),
-			WithEndpoint("http://cloudreveisnotexist.com"),
+			WithEndpoint("http://kotakfileisnotexist.com"),
 			WithTimeout(time.Duration(1)*time.Microsecond),
 			WithCredential(auth.HMACAuth{SecretKey: []byte("123")}, 10),
 			WithContext(context.Background()),

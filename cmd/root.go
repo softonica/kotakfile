@@ -20,8 +20,8 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "cloudreve",
-	Short: "Cloudreve is a server-side self-hosted cloud storage platform",
+	Use:   "kotakfile",
+	Short: "Kotakfile is a server-side self-hosted cloud storage platform",
 	Long: `Self-hosted file management and sharing system, supports multiple storage providers.
 Complete documentation is available at https://docs.cloudreve.org/`,
 	Run: func(cmd *cobra.Command, args []string) {

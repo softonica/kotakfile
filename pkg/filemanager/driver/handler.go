@@ -11,13 +11,13 @@ import (
 )
 
 const (
-	// HandlerCapabilityProxyRequired this handler requires Cloudreve's proxy to get file content
+	// HandlerCapabilityProxyRequired this handler requires Kotakfile's proxy to get file content
 	HandlerCapabilityProxyRequired HandlerCapability = iota
 	// HandlerCapabilityInboundGet this handler supports directly get file's RSCloser, usually
-	// indicates that the file is stored in the same machine as Cloudreve
+	// indicates that the file is stored in the same machine as Kotakfile
 	HandlerCapabilityInboundGet
 	// HandlerCapabilityUploadSentinelRequired this handler does not support compliance callback mechanism,
-	// thus it requires Cloudreve's sentinel to guarantee the upload is under control. Cloudreve will try
+	// thus it requires Kotakfile's sentinel to guarantee the upload is under control. Kotakfile will try
 	// to delete the placeholder file and cancel the upload session if upload callback is not made after upload
 	// session expire.
 	HandlerCapabilityUploadSentinelRequired

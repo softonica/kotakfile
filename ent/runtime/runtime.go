@@ -5,6 +5,7 @@ package runtime
 import (
 	"time"
 
+	"github.com/cloudreve/Cloudreve/v4/ent/announcement"
 	"github.com/cloudreve/Cloudreve/v4/ent/davaccount"
 	"github.com/cloudreve/Cloudreve/v4/ent/directlink"
 	"github.com/cloudreve/Cloudreve/v4/ent/entity"
@@ -29,6 +30,37 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	announcementMixin := schema.Announcement{}.Mixin()
+	announcementMixinHooks0 := announcementMixin[0].Hooks()
+	announcement.Hooks[0] = announcementMixinHooks0[0]
+	announcementMixinInters0 := announcementMixin[0].Interceptors()
+	announcement.Interceptors[0] = announcementMixinInters0[0]
+	announcementMixinFields0 := announcementMixin[0].Fields()
+	_ = announcementMixinFields0
+	announcementFields := schema.Announcement{}.Fields()
+	_ = announcementFields
+	// announcementDescCreatedAt is the schema descriptor for created_at field.
+	announcementDescCreatedAt := announcementMixinFields0[0].Descriptor()
+	// announcement.DefaultCreatedAt holds the default value on creation for the created_at field.
+	announcement.DefaultCreatedAt = announcementDescCreatedAt.Default.(func() time.Time)
+	// announcementDescUpdatedAt is the schema descriptor for updated_at field.
+	announcementDescUpdatedAt := announcementMixinFields0[1].Descriptor()
+	// announcement.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	announcement.DefaultUpdatedAt = announcementDescUpdatedAt.Default.(func() time.Time)
+	// announcement.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	announcement.UpdateDefaultUpdatedAt = announcementDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// announcementDescTitle is the schema descriptor for title field.
+	announcementDescTitle := announcementFields[0].Descriptor()
+	// announcement.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	announcement.TitleValidator = announcementDescTitle.Validators[0].(func(string) error)
+	// announcementDescIsActive is the schema descriptor for is_active field.
+	announcementDescIsActive := announcementFields[2].Descriptor()
+	// announcement.DefaultIsActive holds the default value on creation for the is_active field.
+	announcement.DefaultIsActive = announcementDescIsActive.Default.(bool)
+	// announcementDescIsPopup is the schema descriptor for is_popup field.
+	announcementDescIsPopup := announcementFields[3].Descriptor()
+	// announcement.DefaultIsPopup holds the default value on creation for the is_popup field.
+	announcement.DefaultIsPopup = announcementDescIsPopup.Default.(bool)
 	davaccountMixin := schema.DavAccount{}.Mixin()
 	davaccountMixinHooks0 := davaccountMixin[0].Hooks()
 	davaccount.Hooks[0] = davaccountMixinHooks0[0]

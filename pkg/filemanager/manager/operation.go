@@ -161,7 +161,7 @@ func (m *manager) SoftDelete(ctx context.Context, path ...*fs.URI) error {
 // It iterates through all pages of the trash listing and performs the deletion in
 // batches. Returns nil if the trash is already empty.
 func (m *manager) EmptyTrash(ctx context.Context) error {
-	trashUri, err := fs.NewUriFromString(fmt.Sprintf("%s://%s", constants.CloudreveScheme, constants.FileSystemTrash))
+	trashUri, err := fs.NewUriFromString(fmt.Sprintf("%s://%s", constants.KotakfileScheme, constants.FileSystemTrash))
 	if err != nil {
 		return fmt.Errorf("failed to build trash uri: %w", err)
 	}

@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	indexName         = "cloudreve_files"
+	indexName         = "kotakfile_files"
 	embedderName      = "cr-text"
 	embeddingTemplate = "Chunk #{{doc.chunk_idx}} in a file named '{{doc.file_name}}': {{ doc.text }}"
 )

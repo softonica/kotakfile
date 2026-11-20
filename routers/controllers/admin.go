@@ -664,3 +664,69 @@ func AdminBatchDeleteOAuthClient(c *gin.Context) {
 	}
 	c.JSON(200, serializer.Response{})
 }
+
+// AdminListAnnouncements lists announcements
+func AdminListAnnouncements(c *gin.Context) {
+	service := ParametersFromContext[*admin.AdminListService](c, admin.AdminListServiceParamsCtx{})
+	res, err := service.Announcements(c)
+	if err != nil {
+		c.JSON(200, serializer.Err(c, err))
+		return
+	}
+	c.JSON(200, serializer.Response{Data: res})
+}
+
+// AdminGetAnnouncement gets an announcement by ID
+func AdminGetAnnouncement(c *gin.Context) {
+	service := ParametersFromContext[*admin.SingleAnnouncementService](c, admin.SingleAnnouncementParamCtx{})
+	res, err := service.Get(c)
+	if err != nil {
+		c.JSON(200, serializer.Err(c, err))
+		return
+	}
+	c.JSON(200, serializer.Response{Data: res})
+}
+
+// AdminCreateAnnouncement creates a new announcement
+func AdminCreateAnnouncement(c *gin.Context) {
+	service := ParametersFromContext[*admin.UpsertAnnouncementService](c, admin.UpsertAnnouncementParamCtx{})
+	res, err := service.Create(c)
+	if err != nil {
+		c.JSON(200, serializer.Err(c, err))
+		return
+	}
+	c.JSON(200, serializer.Response{Data: res})
+}
+
+// AdminUpdateAnnouncement updates an announcement
+func AdminUpdateAnnouncement(c *gin.Context) {
+	service := ParametersFromContext[*admin.UpsertAnnouncementService](c, admin.UpsertAnnouncementParamCtx{})
+	res, err := service.Update(c)
+	if err != nil {
+		c.JSON(200, serializer.Err(c, err))
+		return
+	}
+	c.JSON(200, serializer.Response{Data: res})
+}
+
+// AdminDeleteAnnouncement deletes an announcement
+func AdminDeleteAnnouncement(c *gin.Context) {
+	service := ParametersFromContext[*admin.SingleAnnouncementService](c, admin.SingleAnnouncementParamCtx{})
+	err := service.Delete(c)
+	if err != nil {
+		c.JSON(200, serializer.Err(c, err))
+		return
+	}
+	c.JSON(200, serializer.Response{})
+}
+
+// AdminBatchDeleteAnnouncement batch deletes announcements
+func AdminBatchDeleteAnnouncement(c *gin.Context) {
+	service := ParametersFromContext[*admin.BatchAnnouncementService](c, admin.BatchAnnouncementParamCtx{})
+	err := service.Delete(c)
+	if err != nil {
+		c.JSON(200, serializer.Err(c, err))
+		return
+	}
+	c.JSON(200, serializer.Response{})
+}

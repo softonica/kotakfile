@@ -1,6 +1,6 @@
-# Contributing to Cloudreve
+# Contributing to Kotakfile
 
-Thank you for your interest in contributing to Cloudreve!
+Thank you for your interest in contributing to Kotakfile!
 
 The full contributing guide — including project structure, development environment
 setup, how to pick a task, how to submit a PR, and our AIGC (AI-generated code)
@@ -10,7 +10,7 @@ policy — is maintained in our documentation site:
 
 A few key points to keep in mind before you open a PR:
 
-- Cloudreve is dual-licensed. We only accept contributions to the **community
+- Kotakfile is dual-licensed. We only accept contributions to the **community
   edition**, and all contributors must sign the
   [CLA](https://cla-assistant.io/cloudreve/cloudreve) before a PR can be merged.
 - **PRs must be linked to an issue labeled with `Backlog`.** We do not accept

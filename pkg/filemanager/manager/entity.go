@@ -43,7 +43,7 @@ type (
 		RecycleEntities(ctx context.Context, force bool, entityIDs ...int) error
 		// ListPhysical lists physical files in a path
 		ListPhysical(ctx context.Context, path string, policyID int, recursive bool, progress driver.ListProgressFunc) ([]fs.PhysicalObject, error)
-		// ImportPhysical imports a physical file to a Cloudreve file
+		// ImportPhysical imports a physical file to a Kotakfile file
 		ImportPhysical(ctx context.Context, dst *fs.URI, policyId int, src fs.PhysicalObject, completeHook bool) error
 	}
 	DirectLink struct {

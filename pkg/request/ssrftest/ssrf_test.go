@@ -91,8 +91,8 @@ func TestValidateExternalURL_AllowedHostBypass(t *testing.T) {
 		assert.NoError(t, request.ValidateExternalURL(ctx, raw, opt), "raw=%q", raw)
 	}
 
-	opt = request.SSRFOptions{AllowedHosts: []string{"cloudreve.example.com"}}
-	assert.NoError(t, request.ValidateExternalURL(ctx, "https://cloudreve.example.com/x", opt))
+	opt = request.SSRFOptions{AllowedHosts: []string{"kotakfile.example.com"}}
+	assert.NoError(t, request.ValidateExternalURL(ctx, "https://kotakfile.example.com/x", opt))
 
 	opt = request.SSRFOptions{AllowedHosts: []string{"127.0.0.1"}}
 	assert.NoError(t, request.ValidateExternalURL(ctx, "http://127.0.0.1:7777/secret", opt))

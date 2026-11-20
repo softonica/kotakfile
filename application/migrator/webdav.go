@@ -64,7 +64,7 @@ func (m *Migrator) migrateWebdav() error {
 				SetUpdatedAt(formatTime(webdavAccount.UpdatedAt)).
 				SetRawID(int(webdavAccount.ID)).
 				SetName(webdavAccount.Name).
-				SetURI("cloudreve://my" + webdavAccount.Root).
+				SetURI("kotakfile://my" + webdavAccount.Root).
 				SetPassword(webdavAccount.Password).
 				SetProps(&props).
 				SetOptions(&options).

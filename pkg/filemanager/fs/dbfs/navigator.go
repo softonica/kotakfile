@@ -540,21 +540,21 @@ func parseSearchPageToken(token string) (int, string, error) {
 }
 
 func newMyUri() *fs.URI {
-	res, _ := fs.NewUriFromString(constants.CloudreveScheme + "://" + string(constants.FileSystemMy))
+	res, _ := fs.NewUriFromString(constants.KotakfileScheme + "://" + string(constants.FileSystemMy))
 	return res
 }
 
 func newMyIDUri(uid string) *fs.URI {
-	res, _ := fs.NewUriFromString(fmt.Sprintf("%s://%s@%s", constants.CloudreveScheme, uid, constants.FileSystemMy))
+	res, _ := fs.NewUriFromString(fmt.Sprintf("%s://%s@%s", constants.KotakfileScheme, uid, constants.FileSystemMy))
 	return res
 }
 
 func newTrashUri(name string) *fs.URI {
-	res, _ := fs.NewUriFromString(fmt.Sprintf("%s://%s", constants.CloudreveScheme, constants.FileSystemTrash))
+	res, _ := fs.NewUriFromString(fmt.Sprintf("%s://%s", constants.KotakfileScheme, constants.FileSystemTrash))
 	return res.Join(name)
 }
 
 func newSharedWithMeUri(id string) *fs.URI {
-	res, _ := fs.NewUriFromString(fmt.Sprintf("%s://%s", constants.CloudreveScheme, constants.FileSystemSharedWithMe))
+	res, _ := fs.NewUriFromString(fmt.Sprintf("%s://%s", constants.KotakfileScheme, constants.FileSystemSharedWithMe))
 	return res.Join(id)
 }

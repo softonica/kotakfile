@@ -16,7 +16,7 @@ import (
 // Store session存储
 var Store sessions.Store
 
-const SessionName = "cloudreve-session"
+const SessionName = "kotakfile-session"
 
 // Session 初始化session
 func Session(dep dependency.Dep) gin.HandlerFunc {

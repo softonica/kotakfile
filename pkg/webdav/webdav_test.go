@@ -59,8 +59,8 @@ func TestParseOverwrite(t *testing.T) {
 }
 
 func TestPerformCopyMove(t *testing.T) {
-	src := mustWebDAVTestURI(t, "cloudreve://my/source.temp")
-	dst := mustWebDAVTestURI(t, "cloudreve://my/source.txt")
+	src := mustWebDAVTestURI(t, "kotakfile://my/source.temp")
+	dst := mustWebDAVTestURI(t, "kotakfile://my/source.txt")
 	dstFolder := dst.DirUri()
 
 	t.Run("overwrite disabled", func(t *testing.T) {

@@ -182,7 +182,7 @@ func (m *RemoteDownloadTask) createDownloadTask(ctx context.Context, dep depende
 	// Validate the user-supplied URL (m.state.SrcUri) against the assigned
 	// node's URLValidation policy, with the operator-configured site URL
 	// host(s) always added to the allowlist. We don't validate SrcFileUri
-	// resolution because that's a Cloudreve-internal entity URL pointing at
+	// resolution because that's a Kotakfile-internal entity URL pointing at
 	// the user's own torrent file.
 	if m.state.SrcUri != "" {
 		opt := buildSSRFOptions(ctx, dep, m.node.Settings(ctx))
@@ -227,7 +227,7 @@ func (m *RemoteDownloadTask) createDownloadTask(ctx context.Context, dep depende
 
 // buildSSRFOptions composes the SSRF policy for a download: the assigned
 // node's URLValidation settings, plus the operator-configured site URL hosts
-// (always allowlisted so users can fetch files served by Cloudreve itself).
+// (always allowlisted so users can fetch files served by Kotakfile itself).
 func buildSSRFOptions(ctx context.Context, dep dependency.Dep, node *types.NodeSetting) request.SSRFOptions {
 	opt := request.SSRFOptions{}
 	if node != nil && node.URLValidation != nil {

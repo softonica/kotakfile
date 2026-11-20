@@ -26,13 +26,13 @@ import (
 )
 
 type Server interface {
-	// Start starts the Cloudreve server.
+	// Start starts the Kotakfile server.
 	Start() error
 	PrintBanner()
 	Close()
 }
 
-// NewServer constructs a new Cloudreve server instance with given dependency.
+// NewServer constructs a new Kotakfile server instance with given dependency.
 func NewServer(dep dependency.Dep) Server {
 	return &server{
 		dep:    dep,

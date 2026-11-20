@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-WORKDIR /cloudreve
+WORKDIR /kotakfile
 
 RUN apk update \
     && apk add --no-cache tzdata vips-tools ffmpeg libreoffice aria2 supervisor font-noto font-noto-cjk libheif libraw-tools\
@@ -17,14 +17,14 @@ ENV CR_ENABLE_ARIA2=1 \
     CR_SETTING_DEFAULT_thumb_libraw_enabled=1
 
 COPY .build/aria2.supervisor.conf .build/entrypoint.sh ./
-COPY cloudreve ./cloudreve
+COPY kotakfile ./kotakfile
 
-RUN chmod +x ./cloudreve \
+RUN chmod +x ./kotakfile \
     && chmod +x ./entrypoint.sh
 
 EXPOSE 5212 443 6888 6888/udp
 
-VOLUME ["/cloudreve/data"]
+VOLUME ["/kotakfile/data"]
 
 ENTRYPOINT ["sh", "./entrypoint.sh"]
 

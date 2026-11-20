@@ -6,7 +6,7 @@ package constants
 var BackendVersion = "4.14.0"
 
 // IsPro 是否为Pro版本
-var IsPro = "false"
+var IsPro = "true"
 
 var IsProBool = IsPro == "true"
 
@@ -19,7 +19,7 @@ const (
 	CrHeaderPrefix = "X-Cr-"
 )
 
-const CloudreveScheme = "cloudreve"
+const KotakfileScheme = "kotakfile"
 
 type (
 	FileSystemType string

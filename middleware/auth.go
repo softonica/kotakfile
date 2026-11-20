@@ -111,7 +111,7 @@ func WebDAVAuth() gin.HandlerFunc {
 				c.Next()
 				return
 			}
-			c.Writer.Header()["WWW-Authenticate"] = []string{`Basic realm="cloudreve"`}
+			c.Writer.Header()["WWW-Authenticate"] = []string{`Basic realm="kotakfile"`}
 			c.Status(http.StatusUnauthorized)
 			c.Abort()
 			return
